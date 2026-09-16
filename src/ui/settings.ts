@@ -3,12 +3,12 @@
 // when you leave it — there is no Save button. "Add Provider" opens an empty
 // card; it becomes a real provider the moment it has a name.
 
-import type { Backend } from "../api";
 import * as actions from "../actions";
-import { h, icon, replaceChildren, type IconName } from "../dom";
+import type { Backend } from "../api";
+import { h, type IconName, icon, replaceChildren } from "../dom";
 import { PROTOCOLS } from "../presets";
 import { prettyShortcut, shortcutFromEvent } from "../shortcut";
-import { store, type State } from "../state";
+import { type State, store } from "../state";
 import type { Appearance, Protocol, ProviderView } from "../types";
 
 export function createSettings(backend: Backend): HTMLElement {
@@ -17,7 +17,13 @@ export function createSettings(backend: Backend): HTMLElement {
   const data = h("div", { class: "group" });
   const addRow = h(
     "button",
-    { class: "add-row", type: "button", title: "Add Provider", "aria-label": "Add Provider", onclick: () => addDraft() },
+    {
+      class: "add-row",
+      type: "button",
+      title: "Add Provider",
+      "aria-label": "Add Provider",
+      onclick: () => addDraft(),
+    },
     icon("plus"),
   );
 
@@ -62,7 +68,12 @@ export function createSettings(backend: Backend): HTMLElement {
     }
     for (const id of [...cards.keys()]) if (!seen.has(id)) cards.delete(id);
     if (draft) els.push(draft.el);
-    replaceChildren(providersList, els.length ? els : [h("div", { class: "group-empty" }, "No providers yet.")]);
+    replaceChildren(
+      providersList,
+      els.length
+        ? els
+        : [h("div", { class: "group-empty" }, "No providers yet.")],
+    );
   };
   const hooks: CardHooks = {
     created(id, card) {
@@ -82,7 +93,18 @@ export function createSettings(backend: Backend): HTMLElement {
       draft.focus();
       return;
     }
-    draft = providerCard({ id: "", name: "", protocol: "chat", base_url: "", models: [], has_key: false }, backend, hooks);
+    draft = providerCard(
+      {
+        id: "",
+        name: "",
+        protocol: "chat",
+        base_url: "",
+        models: [],
+        has_key: false,
+      },
+      backend,
+      hooks,
+    );
     providersList.querySelector(".group-empty")?.remove();
     providersList.append(draft.el);
     draft.focus();
@@ -94,22 +116,50 @@ export function createSettings(backend: Backend): HTMLElement {
     const u = s.update;
     let control: HTMLElement;
     if (u && (u.phase === "downloading" || u.phase === "installing")) {
-      control = h("span", { class: "srow-value" }, u.phase === "installing" ? "Installing…" : `Downloading… ${Math.round((u.progress ?? 0) * 100)}%`);
+      control = h(
+        "span",
+        { class: "srow-value" },
+        u.phase === "installing"
+          ? "Installing…"
+          : `Downloading… ${Math.round((u.progress ?? 0) * 100)}%`,
+      );
     } else if (u) {
       control = h(
         "div",
         { class: "srow-inline" },
-        h("span", { class: `srow-value${u.phase === "failed" ? " err" : ""}`, title: u.error ?? u.notes ?? "" }, u.phase === "failed" ? "Update failed" : `${u.version} available`),
-        tbtn(u.phase === "failed" ? "Retry" : "Update", () => void actions.installUpdate()),
+        h(
+          "span",
+          {
+            class: `srow-value${u.phase === "failed" ? " err" : ""}`,
+            title: u.error ?? u.notes ?? "",
+          },
+          u.phase === "failed" ? "Update failed" : `${u.version} available`,
+        ),
+        tbtn(
+          u.phase === "failed" ? "Retry" : "Update",
+          () => void actions.installUpdate(),
+        ),
       );
     } else if (s.updateCheck === "checking") {
       control = h("span", { class: "srow-value" }, "Checking…");
     } else if (s.updateCheck === "uptodate") {
       control = h("span", { class: "srow-value" }, "Up to date");
     } else if (s.updateCheck === "failed") {
-      control = h("div", { class: "srow-inline" }, h("span", { class: "srow-value err" }, "Couldn't reach the release feed"), tbtn("Retry", () => void actions.checkForUpdates(true)));
+      control = h(
+        "div",
+        { class: "srow-inline" },
+        h(
+          "span",
+          { class: "srow-value err" },
+          "Couldn't reach the release feed",
+        ),
+        tbtn("Retry", () => void actions.checkForUpdates(true)),
+      );
     } else {
-      control = tbtn("Check for Updates", () => void actions.checkForUpdates(true));
+      control = tbtn(
+        "Check for Updates",
+        () => void actions.checkForUpdates(true),
+      );
     }
     return srow("Version", control, s.version ? `im ${s.version}` : undefined);
   };
@@ -117,8 +167,16 @@ export function createSettings(backend: Backend): HTMLElement {
 
   const renderGeneral = (s: State) => {
     const settings = s.settings;
-    const appearanceIcons: Record<Appearance, IconName> = { system: "display", light: "sun", dark: "moon" };
-    const appearanceLabels: Record<Appearance, string> = { system: "System", light: "Light", dark: "Dark" };
+    const appearanceIcons: Record<Appearance, IconName> = {
+      system: "display",
+      light: "sun",
+      dark: "moon",
+    };
+    const appearanceLabels: Record<Appearance, string> = {
+      system: "System",
+      light: "Light",
+      dark: "Dark",
+    };
     const seg = h(
       "div",
       { class: "segmented", role: "radiogroup", "aria-label": "Appearance" },
@@ -137,17 +195,55 @@ export function createSettings(backend: Backend): HTMLElement {
         ),
       ),
     );
-    const prompt = h("textarea", { class: "sfield area", rows: 3, placeholder: "Copied into every new chat as its system prompt.", value: s.settings.system_prompt ?? "" }) as HTMLTextAreaElement;
-    prompt.addEventListener("change", () => void actions.saveSettings({ ...store.state.settings, system_prompt: prompt.value.trim() || undefined }));
+    const prompt = h("textarea", {
+      class: "sfield area",
+      rows: 3,
+      placeholder: "Copied into every new chat as its system prompt.",
+      value: s.settings.system_prompt ?? "",
+    }) as HTMLTextAreaElement;
+    prompt.addEventListener(
+      "change",
+      () =>
+        void actions.saveSettings({
+          ...store.state.settings,
+          system_prompt: prompt.value.trim() || undefined,
+        }),
+    );
     versionEl = versionRow();
-    replaceChildren(general, versionEl, srow("System prompt", null, undefined, prompt), srow("Appearance", seg), shortcutRow(), accessRow(backend));
+    replaceChildren(
+      general,
+      versionEl,
+      srow("System prompt", null, undefined, prompt),
+      srow("Appearance", seg),
+      shortcutRow(),
+      accessRow(backend),
+    );
   };
 
   const renderData = async () => {
     replaceChildren(
       data,
-      srow("Folder", tbtn("Show in Finder", () => actions.revealData())),
-      srow("Export", h("div", { class: "srow-inline" }, h("button", { class: "tbtn", type: "button", title: "All chats as JSONL…", onclick: () => void actions.exportAll() }, icon("export")))),
+      srow(
+        "Folder",
+        tbtn("Show in Finder", () => actions.revealData()),
+      ),
+      srow(
+        "Export",
+        h(
+          "div",
+          { class: "srow-inline" },
+          h(
+            "button",
+            {
+              class: "tbtn",
+              type: "button",
+              title: "All chats as JSONL…",
+              onclick: () => void actions.exportAll(),
+            },
+            icon("export"),
+          ),
+        ),
+      ),
     );
   };
 
@@ -166,7 +262,9 @@ export function createSettings(backend: Backend): HTMLElement {
     } else if (open) {
       // Appearance may have changed from the menu; keep the segmented control honest.
       general.querySelectorAll(".seg").forEach((b, i) => {
-        const on = (["system", "light", "dark"] as Appearance[])[i] === s.settings.appearance;
+        const on =
+          (["system", "light", "dark"] as Appearance[])[i] ===
+          s.settings.appearance;
         b.classList.toggle("on", on);
         b.setAttribute("aria-checked", String(on));
       });
@@ -182,32 +280,69 @@ export function createSettings(backend: Backend): HTMLElement {
 }
 
 function section(title: string, action?: HTMLElement): HTMLElement {
-  return h("div", { class: `section${action ? " with-action" : ""}` }, h("h2", null, title), action ?? null);
+  return h(
+    "div",
+    { class: `section${action ? " with-action" : ""}` },
+    h("h2", null, title),
+    action ?? null,
+  );
 }
 
 /** One list row: label · control (right); optional note under the label and a
  *  full-width block (textarea) beneath. */
-function srow(label: string, control: HTMLElement | null, note?: string, block?: HTMLElement): HTMLElement {
+function srow(
+  label: string,
+  control: HTMLElement | null,
+  note?: string,
+  block?: HTMLElement,
+): HTMLElement {
   return h(
     "div",
     { class: `srow${block ? " has-block" : ""}` },
-    h("div", { class: "srow-label" }, label, note ? h("div", { class: "srow-note" }, note) : null),
+    h(
+      "div",
+      { class: "srow-label" },
+      label,
+      note ? h("div", { class: "srow-note" }, note) : null,
+    ),
     control ? h("div", { class: "srow-control" }, control) : null,
     block ? h("div", { class: "srow-block" }, block) : null,
   );
 }
 
-function tbtn(label: string, onClick: () => void, danger = false): HTMLButtonElement {
-  return h("button", { class: `tbtn${danger ? " danger" : ""}`, type: "button", onclick: onClick }, label) as HTMLButtonElement;
+function tbtn(
+  label: string,
+  onClick: () => void,
+  danger = false,
+): HTMLButtonElement {
+  return h(
+    "button",
+    {
+      class: `tbtn${danger ? " danger" : ""}`,
+      type: "button",
+      onclick: onClick,
+    },
+    label,
+  ) as HTMLButtonElement;
 }
 
 /** "Quick input · ⌥ Space": click the shortcut, press the new keys; ⌫ turns it off,
  *  Esc keeps the old one. A combination the OS refuses is reported under the label. */
 function shortcutRow(): HTMLElement {
-  const field = h("button", { class: "shortcut", type: "button", title: "Click, then press the new keys. Delete turns it off." }, prettyShortcut(store.state.settings.quick_shortcut)) as HTMLButtonElement;
+  const field = h(
+    "button",
+    {
+      class: "shortcut",
+      type: "button",
+      title: "Click, then press the new keys. Delete turns it off.",
+    },
+    prettyShortcut(store.state.settings.quick_shortcut),
+  ) as HTMLButtonElement;
   let recording = false;
   const paint = () => {
-    field.textContent = recording ? "Press keys…" : prettyShortcut(store.state.settings.quick_shortcut);
+    field.textContent = recording
+      ? "Press keys…"
+      : prettyShortcut(store.state.settings.quick_shortcut);
     field.classList.toggle("recording", recording);
   };
   const stop = () => {
@@ -220,7 +355,8 @@ function shortcutRow(): HTMLElement {
     e.preventDefault();
     e.stopPropagation();
     if (e.key === "Escape") return stop();
-    const accel = e.key === "Backspace" || e.key === "Delete" ? "" : shortcutFromEvent(e);
+    const accel =
+      e.key === "Backspace" || e.key === "Delete" ? "" : shortcutFromEvent(e);
     if (accel === null) return; // a modifier on its own: keep waiting for the key
     stop();
     field.textContent = prettyShortcut(accel);
@@ -239,7 +375,12 @@ function shortcutRow(): HTMLElement {
     window.addEventListener("keydown", onKey, true);
     field.addEventListener("blur", stop);
   });
-  return h("div", { class: "srow" }, h("div", { class: "srow-label" }, "Quick input"), h("div", { class: "srow-control" }, field));
+  return h(
+    "div",
+    { class: "srow" },
+    h("div", { class: "srow-label" }, "Quick input"),
+    h("div", { class: "srow-control" }, field),
+  );
 }
 
 /** Reading the selection in other apps needs Accessibility access; the button asks for it. */
@@ -247,7 +388,12 @@ function accessRow(backend: Backend): HTMLElement {
   const control = h("div", { class: "srow-inline" });
   let polling = 0;
   const paint = (granted: boolean) => {
-    replaceChildren(control, granted ? h("span", { class: "srow-value" }, "Allowed") : tbtn("Allow…", () => void request()));
+    replaceChildren(
+      control,
+      granted
+        ? h("span", { class: "srow-value" }, "Allowed")
+        : tbtn("Allow…", () => void request()),
+    );
   };
   const check = () => backend.quickAccess().then(paint);
   const request = async () => {
@@ -257,7 +403,8 @@ function accessRow(backend: Backend): HTMLElement {
     let tries = 0;
     polling = window.setInterval(() => {
       void backend.quickAccess().then((ok) => {
-        if (ok || ++tries > 90 || store.state.view !== "settings") clearInterval(polling);
+        if (ok || ++tries > 90 || store.state.view !== "settings")
+          clearInterval(polling);
         if (ok) paint(true);
       });
     }, 1000);
@@ -297,28 +444,77 @@ function idFor(name: string, baseUrl: string): string {
   return id;
 }
 
-function providerCard(initial: ProviderView, backend: Backend, hooks: CardHooks): ProviderCard {
+function providerCard(
+  initial: ProviderView,
+  backend: Backend,
+  hooks: CardHooks,
+): ProviderCard {
   let p = initial;
   const isDraft = () => p.id === "";
-  const name = h("input", { class: "sfield name", value: p.name, placeholder: "Name", spellcheck: false }) as HTMLInputElement;
+  const name = h("input", {
+    class: "sfield name",
+    value: p.name,
+    placeholder: "Name",
+    spellcheck: false,
+  }) as HTMLInputElement;
   const id = h("div", { class: "provider-id" }, p.id);
-  const protocol = h("select", { class: "popup" }, PROTOCOLS.map((x) => h("option", { value: x.value, selected: x.value === p.protocol }, x.label))) as HTMLSelectElement;
-  const baseUrl = h("input", { class: "sfield mono", value: p.base_url, placeholder: "https://host/v1", spellcheck: false, type: "url" }) as HTMLInputElement;
-  const key = h("input", { class: "sfield mono", type: "password", placeholder: p.has_key ? "••••••••" : "Not set", autocomplete: "off", spellcheck: false }) as HTMLInputElement;
-  const models = h("textarea", { class: "sfield area mono", rows: rowsFor(p.models.length), placeholder: "one model id per line", spellcheck: false, value: p.models.join("\n") }) as HTMLTextAreaElement;
+  const protocol = h(
+    "select",
+    { class: "popup" },
+    PROTOCOLS.map((x) =>
+      h(
+        "option",
+        { value: x.value, selected: x.value === p.protocol },
+        x.label,
+      ),
+    ),
+  ) as HTMLSelectElement;
+  const baseUrl = h("input", {
+    class: "sfield mono",
+    value: p.base_url,
+    placeholder: "https://host/v1",
+    spellcheck: false,
+    type: "url",
+  }) as HTMLInputElement;
+  const key = h("input", {
+    class: "sfield mono",
+    type: "password",
+    placeholder: p.has_key ? "••••••••" : "Not set",
+    autocomplete: "off",
+    spellcheck: false,
+  }) as HTMLInputElement;
+  const models = h("textarea", {
+    class: "sfield area mono",
+    rows: rowsFor(p.models.length),
+    placeholder: "one model id per line",
+    spellcheck: false,
+    value: p.models.join("\n"),
+  }) as HTMLTextAreaElement;
   const count = h("span", { class: "srow-value" });
   const fetchBtn = tbtn("Fetch", () => void fetchModels());
   const endpoint = h("div", { class: "srow-note mono end" });
 
-  const modelList = () => [...new Set(models.value.split(/\r?\n/).map((m) => m.trim()).filter(Boolean))];
+  const modelList = () => [
+    ...new Set(
+      models.value
+        .split(/\r?\n/)
+        .map((m) => m.trim())
+        .filter(Boolean),
+    ),
+  ];
   const say = (text: string, err = false) => {
     count.textContent = text;
     count.classList.toggle("err", err);
   };
-  const paintCount = () => say(`${modelList().length || "no"} model${modelList().length === 1 ? "" : "s"}`);
+  const paintCount = () =>
+    say(
+      `${modelList().length || "no"} model${modelList().length === 1 ? "" : "s"}`,
+    );
   const paintEndpoint = () => {
     const proto = PROTOCOLS.find((x) => x.value === protocol.value)!;
-    endpoint.textContent = baseUrl.value.trim() ? `${baseUrl.value.trim().replace(/\/+$/, "")}${proto.path}` : "";
+    endpoint.textContent = baseUrl.value.trim()
+      ? `${baseUrl.value.trim().replace(/\/+$/, "")}${proto.path}`
+      : "";
   };
 
   // A draft becomes real on its first save; until it has a name (or a URL to
@@ -326,7 +522,9 @@ function providerCard(initial: ProviderView, backend: Backend, hooks: CardHooks)
   const save = async (apiKey?: string) => {
     if (isDraft() && !name.value.trim() && !baseUrl.value.trim()) return;
     const creating = isDraft();
-    const pid = creating ? idFor(name.value.trim(), baseUrl.value.trim()) : p.id;
+    const pid = creating
+      ? idFor(name.value.trim(), baseUrl.value.trim())
+      : p.id;
     try {
       const providers = await backend.saveProvider({
         id: pid,
@@ -346,7 +544,10 @@ function providerCard(initial: ProviderView, backend: Backend, hooks: CardHooks)
       store.set({ providers });
       if (creating && !store.state.draft) {
         const first = providers.find((x) => x.id === pid);
-        if (first) store.set({ draft: { providerId: first.id, model: first.models[0] ?? "" } });
+        if (first)
+          store.set({
+            draft: { providerId: first.id, model: first.models[0] ?? "" },
+          });
       }
     } catch (e) {
       say(String(e), true);
@@ -357,7 +558,12 @@ function providerCard(initial: ProviderView, backend: Backend, hooks: CardHooks)
     fetchBtn.disabled = true;
     say("Fetching…");
     try {
-      const ids = await backend.fetchModels(protocol.value as Protocol, baseUrl.value.trim(), key.value.trim() || undefined, isDraft() ? undefined : p.id);
+      const ids = await backend.fetchModels(
+        protocol.value as Protocol,
+        baseUrl.value.trim(),
+        key.value.trim() || undefined,
+        isDraft() ? undefined : p.id,
+      );
       if (ids.length) {
         models.value = ids.join("\n");
         models.rows = rowsFor(ids.length);
@@ -382,7 +588,10 @@ function providerCard(initial: ProviderView, backend: Backend, hooks: CardHooks)
     void save(k);
   });
   models.addEventListener("input", paintCount);
-  models.addEventListener("change", () => (models.rows = rowsFor(modelList().length), void save()));
+  models.addEventListener("change", () => {
+    models.rows = rowsFor(modelList().length);
+    save();
+  });
   paintEndpoint();
   paintCount();
 
@@ -391,21 +600,46 @@ function providerCard(initial: ProviderView, backend: Backend, hooks: CardHooks)
       hooks.discard(card);
       return;
     }
-    const ok = await backend.confirm(`Remove “${p.name}”? Its API key is deleted too; chats are kept.`, "Remove Provider", "Remove");
+    const ok = await backend.confirm(
+      `Remove “${p.name}”? Its API key is deleted too; chats are kept.`,
+      "Remove Provider",
+      "Remove",
+    );
     if (!ok) return;
     const providers = await backend.deleteProvider(p.id);
-    const draft = store.state.draft?.providerId === p.id ? null : store.state.draft;
+    const draft =
+      store.state.draft?.providerId === p.id ? null : store.state.draft;
     store.set({ providers, draft });
   };
 
-  const footBtn = tbtn(isDraft() ? "Discard" : "Remove Provider…", () => void remove(), true);
+  const footBtn = tbtn(
+    isDraft() ? "Discard" : "Remove Provider…",
+    () => void remove(),
+    true,
+  );
   const el = h(
     "div",
     { class: `group provider${isDraft() ? " draft" : ""}` },
-    h("div", { class: "srow provider-head" }, h("div", { class: "srow-label" }, name, id), h("div", { class: "srow-control" }, protocol)),
-    h("div", { class: "srow" }, h("div", { class: "srow-label" }, "Base URL"), h("div", { class: "srow-control stack" }, baseUrl, endpoint)),
+    h(
+      "div",
+      { class: "srow provider-head" },
+      h("div", { class: "srow-label" }, name, id),
+      h("div", { class: "srow-control" }, protocol),
+    ),
+    h(
+      "div",
+      { class: "srow" },
+      h("div", { class: "srow-label" }, "Base URL"),
+      h("div", { class: "srow-control stack" }, baseUrl, endpoint),
+    ),
     srow("API key", key),
-    h("div", { class: "srow has-block" }, h("div", { class: "srow-label" }, "Models"), h("div", { class: "srow-control srow-inline" }, count, fetchBtn), h("div", { class: "srow-block" }, models)),
+    h(
+      "div",
+      { class: "srow has-block" },
+      h("div", { class: "srow-label" }, "Models"),
+      h("div", { class: "srow-control srow-inline" }, count, fetchBtn),
+      h("div", { class: "srow-block" }, models),
+    ),
     h("div", { class: "srow provider-foot" }, footBtn),
   );
 

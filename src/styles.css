@@ -5,7 +5,8 @@
 :root {
   color-scheme: light dark;
 
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --font:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, monospace;
 
   --label: light-dark(rgba(0, 0, 0, 0.85), rgba(255, 255, 255, 0.85));
@@ -16,14 +17,20 @@
   --fill: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.075));
   --fill-hover: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.11));
   --fill-code: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.055));
-  --code-bg: light-dark(#f5f5f6, #29292c); /* solid, so the sticky gutter can cover scrolled code */
+  --code-bg: light-dark(
+    #f5f5f6,
+    #29292c
+  ); /* solid, so the sticky gutter can cover scrolled code */
   --selection: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.14));
   --popover: light-dark(rgba(246, 246, 246, 0.96), rgba(44, 44, 46, 0.96));
   --field: light-dark(#ffffff, rgba(255, 255, 255, 0.04));
   --red: light-dark(#d70015, #ff453a);
   --accent: light-dark(#007aff, #0a84ff);
   --accent-text: #ffffff;
-  --shadow: light-dark(0 8px 28px rgba(0, 0, 0, 0.16), 0 8px 28px rgba(0, 0, 0, 0.5));
+  --shadow: light-dark(
+    0 8px 28px rgba(0, 0, 0, 0.16),
+    0 8px 28px rgba(0, 0, 0, 0.5)
+  );
 
   --sidebar-w: 180px; /* both column widths are overridden inline when the user drags them */
   --inspector-w: 300px;
@@ -55,10 +62,10 @@
   box-sizing: border-box;
 }
 [hidden] {
-  display: none !important;
+  display: none;
 }
 body.no-transitions * {
-  transition: none !important;
+  transition: none;
 }
 
 html,
@@ -164,7 +171,7 @@ body.resizing {
   cursor: col-resize;
 }
 body.resizing * {
-  transition: none !important;
+  transition: none;
   pointer-events: none;
 }
 
@@ -177,7 +184,9 @@ body.resizing * {
   min-height: 0;
   overflow: hidden;
   border-right: 1px solid var(--separator);
-  transition: width var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  transition:
+    width var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
 }
 body.no-sidebar .sidebar {
   width: 0;
@@ -188,7 +197,9 @@ body.no-sidebar .sidebar {
   height: 100%;
   display: flex;
   flex-direction: column;
-  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
 }
 body.no-sidebar .sidebar-inner {
   opacity: 0;
@@ -345,7 +356,9 @@ body.no-sidebar .sidebar-inner {
   min-height: 0;
   overflow: hidden;
   border-left: 1px solid var(--separator);
-  transition: width var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  transition:
+    width var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
 }
 body.no-inspector .inspector {
   width: 0;
@@ -359,7 +372,9 @@ body.no-inspector .inspector {
   height: 100%;
   display: flex;
   flex-direction: column;
-  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
 }
 body.no-inspector .inspector-inner {
   opacity: 0;
@@ -516,7 +531,11 @@ body.no-inspector .inspector-inner {
   position: relative;
 }
 body.no-sidebar .main {
-  --topbar-left: calc(var(--controls-left) + var(--controls-w) + 6px); /* clear the traffic lights and both buttons */
+  --topbar-left: calc(
+    var(--controls-left) +
+    var(--controls-w) +
+    6px
+  ); /* clear the traffic lights and both buttons */
 }
 .topbar {
   height: var(--top-h);
@@ -1080,7 +1099,9 @@ details.reasoning summary:hover {
   box-shadow: var(--shadow);
   transform-origin: 0 0;
   /* Only the transform moves (composited); the box is laid out once at its final size. */
-  transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  transition:
+    transform var(--dur) var(--ease),
+    opacity var(--dur) var(--ease);
 }
 .pane.lightbox-card {
   aspect-ratio: auto;
@@ -1193,12 +1214,18 @@ pre.code:hover .code-bar {
   border-radius: 50%;
   background: var(--popover);
   border: 1px solid var(--separator);
-  box-shadow: light-dark(0 2px 8px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.5));
+  box-shadow: light-dark(
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.5)
+  );
   color: var(--secondary);
   opacity: 0;
   transform: translate(-50%, 6px);
   pointer-events: none;
-  transition: opacity 140ms ease, transform 140ms ease, color 100ms ease;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease,
+    color 100ms ease;
   z-index: 2;
 }
 .jump.show {
@@ -1316,7 +1343,9 @@ body.dropping .field {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 100ms ease, transform 100ms ease;
+  transition:
+    opacity 100ms ease,
+    transform 100ms ease;
 }
 .send:disabled {
   background: var(--fill);
