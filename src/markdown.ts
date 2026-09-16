@@ -118,8 +118,7 @@ export function patchMarkdown(body: HTMLElement, next: DocumentFragment) {
 function patchChildren(a: Node, b: Node) {
   const incoming = Array.from(b.childNodes);
   const existing = Array.from(a.childNodes);
-  for (let i = 0; i < incoming.length; i++) {
-    const want = incoming[i]!;
+  for (const [i, want] of incoming.entries()) {
     const have = existing[i];
     if (!have) a.appendChild(want);
     else if (!have.isEqualNode(want) && !patchNode(have, want))
@@ -144,11 +143,13 @@ function patchNode(a: Node, b: Node): boolean {
   if (isCodeBlock(a) || isCodeBlock(b)) {
     // The block's own chrome (and the transcript's preview pane) is not in `b`; only the code moves.
     if (a.className !== b.className) return false;
-    const from = b.querySelector("code")!;
-    const to = a.querySelector("code")!;
+    const from = b.querySelector("code");
+    const to = a.querySelector("code");
+    const row = a.querySelector<HTMLElement>(".code-row");
+    if (!from || !to || !row) return false;
     if (to.textContent !== from.textContent) {
       patchChildren(to, from);
-      setGutter(a.querySelector(".code-row")!, from.textContent ?? "");
+      setGutter(row, from.textContent ?? "");
     }
     return true;
   }
@@ -195,7 +196,7 @@ export function plainText(text: string): DocumentFragment {
         .map((line) => line.replace(/^> ?/, ""))
         .join("\n") ?? null;
     frag.appendChild(quote);
-    text = quoted[2]!;
+    text = quoted[2] ?? "";
   }
   if (text || !quoted) {
     const p = document.createElement("p");

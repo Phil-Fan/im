@@ -16,6 +16,7 @@ export function createSidebar(): HTMLElement {
   );
   // The foot: one card with gear icon, "Settings" label, and — only while an
   // update is waiting — a blue dot on the right edge.
+  const dot = h("span", { class: "dot" });
   const settings = h(
     "button",
     {
@@ -29,7 +30,7 @@ export function createSidebar(): HTMLElement {
     },
     icon("gear"),
     h("span", { class: "nav-label" }, "Settings"),
-    h("span", { class: "dot" }),
+    dot,
   );
   const inner = h(
     "div",
@@ -50,7 +51,6 @@ export function createSidebar(): HTMLElement {
     settings.classList.toggle("on", s.view === "settings");
     const u = s.update;
     // Blue dot on the settings button while an update is waiting.
-    const dot = settings.querySelector<HTMLElement>(".dot")!;
     dot.style.display = u ? "" : "none";
     const sig = [
       s.currentId,

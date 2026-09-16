@@ -56,8 +56,8 @@ function modifierOf(part: string): string | null {
 
 function keyGlyph(code: string): string {
   if (KEY_GLYPH[code]) return KEY_GLYPH[code];
-  if (/^Key[A-Z]$/.test(code)) return code[3]!;
-  if (/^Digit\d$/.test(code)) return code[5]!;
+  if (/^Key[A-Z]$/.test(code)) return code.slice(3);
+  if (/^Digit\d$/.test(code)) return code.slice(5);
   return code;
 }
 

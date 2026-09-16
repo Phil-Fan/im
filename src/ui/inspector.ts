@@ -5,7 +5,7 @@
 
 import * as actions from "../actions";
 import { imagesOf, textOf } from "../content";
-import { formatTokens, h, replaceChildren } from "../dom";
+import { formatTokens, h, replaceChildren, requireElement } from "../dom";
 import { turnMeta, turnMetaTitle } from "../meta";
 import { type LiveTurn, type State, store } from "../state";
 import type { Message, Session } from "../types";
@@ -57,15 +57,19 @@ export function createInspector(): HTMLElement {
     "button",
     {
       class: "code-copy",
-      onclick: () => (actions.copyText(actions.sessionJson()), flash(copyBtn)),
+      onclick: () => {
+        actions.copyText(actions.sessionJson());
+        flash(copyBtn);
+      },
     },
     "Copy",
   );
+  const jsonCode = h("code");
   const jsonPre = h(
     "pre",
     { class: "code json", hidden: true },
     h("div", { class: "code-bar" }, copyBtn),
-    h("code"),
+    jsonCode,
   );
   const scroll = h("div", { class: "inspector-scroll" }, facts, list, jsonPre);
   const root = h(
@@ -148,7 +152,8 @@ export function createInspector(): HTMLElement {
     paintList(entries, session);
     liveRow = list.querySelector(".trow.live");
     liveSeg = map.querySelector(".map-seg.live");
-    if (streaming && s.currentId) paintLive(s.live[s.currentId]!);
+    const live = s.currentId ? s.live[s.currentId] : undefined;
+    if (streaming && live) paintLive(live);
     if (mode === "json") paintJson();
   };
 
@@ -219,10 +224,10 @@ export function createInspector(): HTMLElement {
 
   const paintLive = (live: LiveTurn) => {
     if (liveRow) {
-      liveRow.querySelector(".trow-size")!.textContent = formatChars(
+      requireElement(liveRow, ".trow-size").textContent = formatChars(
         live.text.length,
       );
-      const text = liveRow.querySelector(".trow-text")!;
+      const text = requireElement(liveRow, ".trow-text");
       text.textContent = live.text
         ? preview(live.text)
         : live.reasoning
@@ -240,13 +245,14 @@ export function createInspector(): HTMLElement {
       (_, mime, b64: string) =>
         `"data:${mime};base64,… ${formatBytes((b64.length * 3) / 4)}"`,
     );
-    jsonPre.querySelector("code")!.textContent = shown || "No session yet.";
+    jsonCode.textContent = shown || "No session yet.";
     copyBtn.hidden = !text;
   };
 
   store.subscribe(render);
   store.onLive((id) => {
-    if (id === store.state.currentId) paintLive(store.state.live[id]!);
+    const live = store.state.live[id];
+    if (id === store.state.currentId && live) paintLive(live);
   });
   render(store.state);
   return root;

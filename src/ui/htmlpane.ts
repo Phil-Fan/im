@@ -15,7 +15,7 @@ const SANDBOX = "allow-scripts allow-forms allow-modals allow-popups";
 class FrameStack {
   readonly el: HTMLElement;
   private frames: [HTMLIFrameElement, HTMLIFrameElement];
-  private front = 0;
+  private front: 0 | 1 = 0;
   private urls: [string, string] = ["", ""];
   private shown = "";
   private pending: string | null = null;
@@ -55,20 +55,20 @@ class FrameStack {
     this.pending = null;
     if (html === this.shown) return;
     this.busy = true;
-    const back = 1 - this.front;
-    const frame = this.frames[back]!;
+    const back = this.front === 0 ? 1 : 0;
+    const frame = this.frames[back];
     const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
     const done = () => {
       frame.removeEventListener("load", done);
       // `load` fires before the new document has painted; give it two frames,
       // then fade it in *over* the old one — the old frame stays opaque until
       // it is fully covered, so no white ever shows through the cross-fade.
-      const old = this.frames[this.front]!;
+      const old = this.frames[this.front];
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           old.classList.remove("top");
           frame.classList.add("top", "show");
-          if (this.urls[back]) URL.revokeObjectURL(this.urls[back]!);
+          if (this.urls[back]) URL.revokeObjectURL(this.urls[back]);
           this.urls[back] = url;
           this.front = back;
           this.shown = html;

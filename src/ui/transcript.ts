@@ -9,6 +9,7 @@ import {
   type IconName,
   icon,
   replaceChildren,
+  requireElement,
 } from "../dom";
 import { patchMarkdown, plainText, renderMarkdown } from "../markdown";
 import { turnMeta, turnMetaTitle } from "../meta";
@@ -161,8 +162,7 @@ export function createTranscript(): Transcript {
     if (!streaming) liveEl = null;
 
     const next: Cached[] = [];
-    for (let i = 0; i < messages.length; i++) {
-      const m = messages[i]!;
+    for (const [i, m] of messages.entries()) {
       // Only the newest exchange is editable/regenerable (no branching).
       const isLast =
         m.role === "user"
@@ -187,13 +187,14 @@ export function createTranscript(): Transcript {
     });
 
     const children: HTMLElement[] = next.map((c) => c.el);
-    if (streaming && sessionId) {
+    const live = sessionId ? s.live[sessionId] : undefined;
+    if (streaming && live) {
       if (!liveEl) {
         liveEl = h("div", { class: "turn assistant live empty" });
         liveFolded = false;
       }
       children.push(liveEl);
-      paintLive(liveEl, s.live[sessionId]!);
+      paintLive(liveEl, live);
     }
     const error = s.errors[sessionId ?? "draft"];
     if (error) {
@@ -245,14 +246,14 @@ export function createTranscript(): Transcript {
         el.prepend(reasoning);
       } else {
         patchMarkdown(
-          reasoning.querySelector(".reasoning-body")!,
+          requireElement(reasoning, ".reasoning-body"),
           renderMarkdown(live.reasoning),
         );
       }
       if (live.answering && !liveFolded) {
         liveFolded = true;
         reasoning.open = false;
-        reasoning.querySelector("summary")!.textContent =
+        requireElement(reasoning, "summary").textContent =
           `Thought for ${formatDuration(Math.round(performance.now() - live.startedAt))}`;
       }
     }
@@ -275,8 +276,9 @@ export function createTranscript(): Transcript {
 
   store.subscribe(render);
   store.onLive((id) => {
-    if (id === store.state.currentId && liveEl) {
-      paintLive(liveEl, store.state.live[id]!);
+    const live = store.state.live[id];
+    if (id === store.state.currentId && liveEl && live) {
+      paintLive(liveEl, live);
       if (follow) scrollToBottom();
       else paintJump();
     }
@@ -323,9 +325,9 @@ function renderMessage(
       const ms = m.meta?.thinking_ms;
       const title = ms ? `Thought for ${formatDuration(ms)}` : "Thoughts";
       if (reasoning) {
-        reasoning.querySelector("summary")!.textContent = title;
+        requireElement(reasoning, "summary").textContent = title;
         patchMarkdown(
-          reasoning.querySelector(".reasoning-body")!,
+          requireElement(reasoning, ".reasoning-body"),
           renderMarkdown(m.reasoning_content),
         );
       } else el.prepend(reasoningBlock(title, m.reasoning_content, false));
@@ -338,11 +340,10 @@ function renderMessage(
     }
     attachPreviews(body);
     tools.push(
-      toolButton(
-        "copy",
-        "Copy",
-        (btn) => (actions.copyText(text), flash(btn, "Copied")),
-      ),
+      toolButton("copy", "Copy", (btn) => {
+        actions.copyText(text);
+        flash(btn, "Copied");
+      }),
     );
     if (isLast)
       tools.push(

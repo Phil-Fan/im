@@ -118,12 +118,6 @@ input:focus-visible {
   outline: none;
 }
 
-/* Outside Tauri there is no vibrancy layer; stand in for the sidebar material. */
-html.mock .sidebar,
-html.mock .inspector {
-  background: light-dark(#e9e9eb, #2a2a2c);
-}
-
 #app {
   position: relative;
   display: flex;
@@ -242,9 +236,6 @@ body.no-sidebar .sidebar-inner {
 .nav-row.selected {
   background: var(--selection);
 }
-.nav-row.selected svg {
-  color: var(--label);
-}
 .sessions {
   flex: 1;
   min-height: 0;
@@ -275,6 +266,14 @@ body.no-sidebar .sidebar-inner {
   height: 16px;
   flex: none;
   color: var(--secondary);
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.2s ease-in-out infinite;
+  flex: none;
 }
 .sidebar-foot .dot {
   position: absolute;
@@ -330,15 +329,6 @@ body.no-sidebar .sidebar-inner {
   user-select: text;
   -webkit-user-select: text;
 }
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: pulse 1.2s ease-in-out infinite;
-  flex: none;
-}
-
 /* ---- inspector: the trajectory as data ------------------------------- */
 
 .inspector {
@@ -506,9 +496,10 @@ body.no-inspector .inspector-inner {
   color: var(--label);
   tab-size: 2;
 }
-.inspector pre.json .code-bar {
-  top: 6px;
-  right: 8px;
+/* Outside Tauri there is no vibrancy layer; stand in for the sidebar material. */
+html.mock .sidebar,
+html.mock .inspector {
+  background: light-dark(#e9e9eb, #2a2a2c);
 }
 
 /* ---- main column ----------------------------------------------------- */
@@ -719,13 +710,6 @@ body.resizing .resizer.column-handle::after {
   gap: 6px;
   max-width: 78%;
   margin-bottom: 6px;
-}
-.turn.user .images img {
-  display: block;
-  max-width: 100%;
-  max-height: 260px;
-  border-radius: 12px;
-  border: 1px solid var(--separator);
 }
 .body {
   overflow-wrap: anywhere;
@@ -1142,6 +1126,10 @@ details.reasoning summary:hover {
   user-select: none;
   -webkit-user-select: none;
 }
+.inspector pre.json .code-bar {
+  top: 6px;
+  right: 8px;
+}
 pre.code:hover .code-bar {
   opacity: 1;
 }
@@ -1261,8 +1249,8 @@ pre.code:hover .code-bar {
 .field:focus-within {
   border-color: light-dark(rgba(0, 0, 0, 0.22), rgba(255, 255, 255, 0.28));
 }
-.composer.editing .field,
-body.dropping .field {
+body.dropping .field,
+.composer.editing .field {
   border-color: var(--accent);
 }
 /* Images waiting to go out with the next message. */
@@ -1283,6 +1271,13 @@ body.dropping .field {
   border-radius: 8px;
   border: 1px solid var(--separator);
   object-fit: cover;
+}
+.turn.user .images img {
+  display: block;
+  max-width: 100%;
+  max-height: 260px;
+  border-radius: 12px;
+  border: 1px solid var(--separator);
 }
 .attachment-remove {
   position: absolute;
@@ -1517,10 +1512,6 @@ body.dropping .field {
   grid-template-rows: auto auto;
   row-gap: 6px;
 }
-.srow.has-block .srow-label {
-  align-self: start;
-  padding-top: 2px;
-}
 .srow-block {
   grid-column: 1 / -1;
 }
@@ -1528,6 +1519,10 @@ body.dropping .field {
   font-size: var(--ui);
   color: var(--label);
   min-width: 0;
+}
+.srow.has-block .srow-label {
+  align-self: start;
+  padding-top: 2px;
 }
 .srow-note {
   margin-top: 2px;
@@ -1723,6 +1718,10 @@ body.dropping .field {
   background: var(--accent);
   color: var(--accent-text);
   flex: none;
+}
+/* Selected navigation icons override the base icon colors above. */
+.nav-row.selected svg {
+  color: var(--label);
 }
 .segmented {
   display: inline-flex;

@@ -1,6 +1,6 @@
 import * as actions from "./actions";
 import { createBackend, isTauri, sampleImage } from "./api";
-import { h } from "./dom";
+import { h, requireElement } from "./dom";
 import { normalizeImage } from "./images";
 import { store } from "./state";
 import { createComposer } from "./ui/composer";
@@ -23,7 +23,7 @@ async function main() {
   // No sidebar slide on launch: the saved state should just appear.
   document.body.classList.add("no-transitions");
 
-  const app = document.getElementById("app")!;
+  const app = requireElement(document, "#app");
   const transcript = createTranscript();
   const composer = createComposer();
   composer.prepend(transcript.jump);
@@ -271,7 +271,7 @@ function applyScenario({
     case "scrolled":
       // Reader has scrolled up: the jump-to-bottom button should be showing.
       requestAnimationFrame(() => {
-        const t = document.querySelector(".transcript")!;
+        const t = requireElement(document, ".transcript");
         t.scrollTop = Math.max(0, t.scrollHeight - t.clientHeight - 500);
       });
       break;
@@ -330,7 +330,8 @@ function applyScenario({
       void actions.send(
         "Explain the streaming pipeline once more, with the code sample.",
       );
-      const sel = getSelection()!;
+      const sel = getSelection();
+      if (!sel) throw new Error("Selection API unavailable for select-test");
       let want = "";
       let frames = 0;
       let lost = 0;
@@ -385,7 +386,7 @@ function applyScenario({
     }
     case "collapse-frames": {
       // Real-speed collapse; logs how many frames it painted (RUST_LOG=webview=warn).
-      const sidebar = document.querySelector(".sidebar")!;
+      const sidebar = requireElement(document, ".sidebar");
       let frames = 0;
       let running = false;
       const tick = () => {

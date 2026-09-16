@@ -511,10 +511,11 @@ function providerCard(
       `${modelList().length || "no"} model${modelList().length === 1 ? "" : "s"}`,
     );
   const paintEndpoint = () => {
-    const proto = PROTOCOLS.find((x) => x.value === protocol.value)!;
-    endpoint.textContent = baseUrl.value.trim()
-      ? `${baseUrl.value.trim().replace(/\/+$/, "")}${proto.path}`
-      : "";
+    const proto = PROTOCOLS.find((x) => x.value === protocol.value);
+    endpoint.textContent =
+      proto && baseUrl.value.trim()
+        ? `${baseUrl.value.trim().replace(/\/+$/, "")}${proto.path}`
+        : "";
   };
 
   // A draft becomes real on its first save; until it has a name (or a URL to
@@ -578,7 +579,10 @@ function providerCard(
   };
 
   name.addEventListener("change", () => void save());
-  protocol.addEventListener("change", () => (paintEndpoint(), void save()));
+  protocol.addEventListener("change", () => {
+    paintEndpoint();
+    void save();
+  });
   baseUrl.addEventListener("input", paintEndpoint);
   baseUrl.addEventListener("change", () => void save());
   key.addEventListener("change", () => {

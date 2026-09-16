@@ -48,6 +48,16 @@ export function replaceChildren(el: Element, ...children: Child[]) {
   append(el, children);
 }
 
+/** Required parts of our own DOM should fail explicitly if their structure changes. */
+export function requireElement<E extends Element = HTMLElement>(
+  root: ParentNode,
+  selector: string,
+): E {
+  const el = root.querySelector<E>(selector);
+  if (!el) throw new Error(`Missing required element: ${selector}`);
+  return el;
+}
+
 /** SF Symbol-ish glyphs as inline SVG (stroke = currentColor). */
 export type IconName =
   | "plus"
@@ -71,7 +81,7 @@ export type IconName =
   | "export";
 
 export function icon(name: IconName): SVGElement {
-  const paths: Record<string, string> = {
+  const paths: Record<IconName, string> = {
     plus: "M8 3v10M3 8h10",
     arrowUp: "M8 13V3M3.5 7.5 8 3l4.5 4.5",
     stop: "M4.5 4.5h7v7h-7z",
@@ -102,7 +112,7 @@ export function icon(name: IconName): SVGElement {
   svg.setAttribute("height", "16");
   svg.setAttribute("aria-hidden", "true");
   const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  p.setAttribute("d", paths[name]!);
+  p.setAttribute("d", paths[name]);
   // The gear is a silhouette (fill only): too dense to outline at 16px.
   p.setAttribute(
     "fill",

@@ -98,13 +98,12 @@ async function tauriBackend(): Promise<Backend> {
   // Paths come from the OS (drop, dialog); the bytes come back as an ArrayBuffer.
   const readImages = (paths: string[]) =>
     Promise.all(
-      paths
-        .filter(isImagePath)
-        .map((path) =>
-          invoke<ArrayBuffer>("read_image", { path }).catch(
-            (e) => (console.warn(`read_image ${path}:`, e), null),
-          ),
-        ),
+      paths.filter(isImagePath).map((path) =>
+        invoke<ArrayBuffer>("read_image", { path }).catch((e) => {
+          console.warn(`read_image ${path}:`, e);
+          return null;
+        }),
+      ),
     ).then((r) => r.filter((b): b is ArrayBuffer => b !== null));
 
   return {
@@ -298,7 +297,8 @@ export function sampleImage(): string {
   const c = document.createElement("canvas");
   c.width = 960;
   c.height = 600;
-  const ctx = c.getContext("2d")!;
+  const ctx = c.getContext("2d");
+  if (!ctx) throw new Error("Could not create the sample image canvas");
   const bg = ctx.createLinearGradient(0, 0, 960, 600);
   bg.addColorStop(0, "#dfe7f3");
   bg.addColorStop(1, "#f4e9dc");
@@ -375,7 +375,7 @@ function mockBackend(): Backend {
           },
         ];
 
-  const meta = (model: string, out: number): Message["meta"] => ({
+  const meta = (model: string, out: number): NonNullable<Message["meta"]> => ({
     provider_id: "openrouter",
     protocol: "chat",
     model,
@@ -391,6 +391,11 @@ function mockBackend(): Backend {
   });
 
   const sessions = new Map<string, Session>();
+  const getSession = (id: string): Session => {
+    const session = sessions.get(id);
+    if (!session) throw new Error(`session not found: ${id}`);
+    return session;
+  };
   const mk = (
     id: string,
     title: string,
@@ -468,7 +473,7 @@ function mockBackend(): Backend {
       ),
     );
     if (state === "error") {
-      const s = sessions.get("s1")!;
+      const s = getSession("s1");
       s.messages.push({
         role: "user",
         content: "One more thing…",
@@ -480,7 +485,7 @@ function mockBackend(): Backend {
       state === "html-expanded" ||
       state === "select-test"
     ) {
-      const s = sessions.get("s1")!;
+      const s = getSession("s1");
       s.messages.push({
         role: "user",
         content: "Make me a tiny landing page.",
@@ -494,7 +499,7 @@ function mockBackend(): Backend {
       });
     }
     if (state === "svg") {
-      const s = sessions.get("s1")!;
+      const s = getSession("s1");
       s.messages.push({
         role: "user",
         content: "Draw the cat as an SVG.",
@@ -508,7 +513,7 @@ function mockBackend(): Backend {
       });
     }
     if (state === "image" || state === "image-expanded") {
-      const s = sessions.get("s1")!;
+      const s = getSession("s1");
       s.messages.push({
         role: "user",
         content: contentWith("What does this chart say?", [sampleImage()]),
@@ -520,7 +525,7 @@ function mockBackend(): Backend {
           "Weekly active users climbed for most of the period — from roughly a third of the axis to about 90% at the highlighted bar — then eased slightly in the final week. The blue bar marks the peak.",
         created_at: now(),
         meta: {
-          ...meta("anthropic/claude-sonnet-4", 52)!,
+          ...meta("anthropic/claude-sonnet-4", 52),
           usage: {
             input_tokens: 1640,
             cached_input_tokens: 0,
@@ -547,21 +552,17 @@ function mockBackend(): Backend {
 
   return {
     listSessions: async () => summaries(),
-    getSession: async (id) => {
-      const s = sessions.get(id);
-      if (!s) throw new Error(`session not found: ${id}`);
-      return structuredClone(s);
-    },
+    getSession: async (id) => structuredClone(getSession(id)),
     deleteSession: async (id) => {
       sessions.delete(id);
     },
     renameSession: async (id, title) => {
-      const s = sessions.get(id)!;
+      const s = getSession(id);
       s.title = title;
       return structuredClone(s);
     },
     setSessionModel: async (id, providerId, model) => {
-      const s = sessions.get(id)!;
+      const s = getSession(id);
       s.provider_id = providerId;
       s.model = model;
       return structuredClone(s);
@@ -570,7 +571,7 @@ function mockBackend(): Backend {
       let s: Session;
       if (kind.kind === "send") {
         s = kind.session_id
-          ? sessions.get(kind.session_id)!
+          ? getSession(kind.session_id)
           : mk(`s${Date.now()}`, "New chat", 0, []);
         s.provider_id = kind.provider_id;
         s.model = kind.model;
@@ -586,7 +587,7 @@ function mockBackend(): Backend {
             (kind.images?.length ? "Image" : "New chat");
         sessions.set(s.id, s);
       } else {
-        s = sessions.get(kind.session_id)!;
+        s = getSession(kind.session_id);
         while (s.messages.at(-1)?.role === "assistant") s.messages.pop();
         if (kind.kind === "edit") {
           const last = s.messages.at(-1);
@@ -660,7 +661,7 @@ function mockBackend(): Backend {
         reasoning_content: think,
         created_at: now(),
         meta: {
-          ...meta(s.model, 120)!,
+          ...meta(s.model, 120),
           finish_reason: cancelled ? "cancelled" : "stop",
         },
       };

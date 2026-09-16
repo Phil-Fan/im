@@ -502,12 +502,13 @@ export async function finishRename(id: string, title: string) {
   const sessions = store.state.sessions.map((s) =>
     s.id === id ? { ...s, title: session.title } : s,
   );
+  const current = store.state.session;
   store.set({
     sessions,
     session:
-      store.state.currentId === id
-        ? { ...store.state.session!, title: session.title }
-        : store.state.session,
+      store.state.currentId === id && current
+        ? { ...current, title: session.title }
+        : current,
   });
 }
 

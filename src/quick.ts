@@ -186,8 +186,8 @@ async function tauriHost(): Promise<Host> {
     onShow: (cb) => {
       listening = listen<ShowPayload>("quick:show", (e) => {
         cb(e.payload);
-        if (scenario?.quick_send)
-          setTimeout(() => typeAndSend(scenario.quick_send!), 700);
+        const quickSend = scenario?.quick_send;
+        if (quickSend) setTimeout(() => typeAndSend(quickSend), 700);
         else if (scenario?.quick_esc)
           setTimeout(
             () =>
