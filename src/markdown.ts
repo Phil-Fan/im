@@ -188,11 +188,12 @@ export function plainText(text: string): DocumentFragment {
   const quoted = /^((?:>.*(?:\n|$))+)\n*([\s\S]*)$/.exec(text);
   if (quoted) {
     const quote = document.createElement("blockquote");
-    quote.textContent = quoted[1]
-      ?.trimEnd()
-      .split("\n")
-      .map((line) => line.replace(/^> ?/, ""))
-      .join("\n");
+    quote.textContent =
+      quoted[1]
+        ?.trimEnd()
+        .split("\n")
+        .map((line) => line.replace(/^> ?/, ""))
+        .join("\n") ?? null;
     frag.appendChild(quote);
     text = quoted[2]!;
   }

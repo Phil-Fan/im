@@ -14,12 +14,12 @@ export function createSidebar(): HTMLElement {
     icon("compose"),
     h("span", { class: "nav-label" }, "New Chat"),
   );
-  // The foot: settings in the corner, and — only while an update is waiting —
-  // one dot, one line, one verb.
+  // The foot: one card with gear icon, "Settings" label, and — only while an
+  // update is waiting — a blue dot on the right edge.
   const settings = h(
     "button",
     {
-      class: "icon-btn",
+      class: "sidebar-foot",
       title: "Settings (⌘,)",
       "aria-label": "Settings",
       onclick: () =>
@@ -28,16 +28,8 @@ export function createSidebar(): HTMLElement {
           : actions.openSettings(),
     },
     icon("gear"),
-  );
-  const updateRow = h(
-    "button",
-    {
-      class: "update-row",
-      hidden: true,
-      onclick: () => void actions.installUpdate(),
-    },
+    h("span", { class: "nav-label" }, "Settings"),
     h("span", { class: "dot" }),
-    h("span", { class: "update-text" }),
   );
   const inner = h(
     "div",
@@ -45,7 +37,7 @@ export function createSidebar(): HTMLElement {
     h("div", { class: "sidebar-head", "data-tauri-drag-region": "" }),
     h("div", { class: "nav" }, newChat),
     list,
-    h("div", { class: "sidebar-foot" }, settings, updateRow),
+    settings,
   );
   const root = h("aside", { class: "sidebar" }, inner);
 
@@ -57,23 +49,9 @@ export function createSidebar(): HTMLElement {
     );
     settings.classList.toggle("on", s.view === "settings");
     const u = s.update;
-    updateRow.hidden = !u;
-    if (u) {
-      const busy = u.phase === "downloading" || u.phase === "installing";
-      updateRow.querySelector(".update-text")!.textContent =
-        u.phase === "downloading"
-          ? `Downloading… ${Math.round((u.progress ?? 0) * 100)}%`
-          : u.phase === "installing"
-            ? "Installing…"
-            : u.phase === "failed"
-              ? "Update failed · Retry"
-              : `Update to ${u.version}`;
-      updateRow.title =
-        u.phase === "failed" ? (u.error ?? "") : (u.notes ?? "");
-      (updateRow as HTMLButtonElement).disabled = busy;
-      updateRow.classList.toggle("busy", busy);
-      updateRow.classList.toggle("err", u.phase === "failed");
-    }
+    // Blue dot on the settings button while an update is waiting.
+    const dot = settings.querySelector(".dot")!;
+    dot.style.display = u ? "" : "none";
     const sig = [
       s.currentId,
       s.renamingId,
