@@ -42,7 +42,26 @@ export function replaceChildren(el: Element, ...children: Child[]) {
 }
 
 /** SF Symbol-ish glyphs as inline SVG (stroke = currentColor). */
-export type IconName = "plus" | "arrowUp" | "stop" | "copy" | "redo" | "pencil" | "check" | "chevron" | "sidebar" | "inspector" | "close" | "compose" | "gear" | "expand" | "collapse";
+export type IconName =
+  | "plus"
+  | "arrowUp"
+  | "stop"
+  | "copy"
+  | "redo"
+  | "pencil"
+  | "check"
+  | "chevron"
+  | "sidebar"
+  | "inspector"
+  | "close"
+  | "compose"
+  | "gear"
+  | "expand"
+  | "collapse"
+  | "display"
+  | "sun"
+  | "moon"
+  | "export";
 
 export function icon(name: IconName): SVGElement {
   const paths: Record<string, string> = {
@@ -61,6 +80,10 @@ export function icon(name: IconName): SVGElement {
     collapse: "M13.5 2.5 8.5 7.5M12.5 7.5H8.5V3.5M2.5 13.5l5-5M3.5 8.5h4v4",
     compose: "M8.5 3H4.2A1.2 1.2 0 0 0 3 4.2v7.6A1.2 1.2 0 0 0 4.2 13h7.6a1.2 1.2 0 0 0 1.2-1.2V7.5M11.6 2.4l2 2-5.4 5.4-2.5.5.5-2.5z",
     gear: "M6.5 3.2L6.6 0.8 9.4 0.8 9.5 3.2A5 5 0 0 1 11.4 4.3L13.5 3.2 14.9 5.6 12.9 6.9A5 5 0 0 1 12.9 9.1L14.9 10.4 13.5 12.8 11.4 11.7A5 5 0 0 1 9.5 12.8L9.4 15.2 6.6 15.2 6.5 12.8A5 5 0 0 1 4.6 11.7L2.5 12.8 1.1 10.4 3.1 9.1A5 5 0 0 1 3.1 6.9L1.1 5.6 2.5 3.2 4.6 4.3A5 5 0 0 1 6.5 3.2ZM8 5a3 3 0 1 0 0 6a3 3 0 1 0 0-6",
+    display: "M2.5 3.5h11a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1zM6.5 14h3M8 11.5V14",
+    sun: "M8 5.2a2.8 2.8 0 1 0 0 5.6a2.8 2.8 0 1 0 0-5.6M8 1.8v1.3M8 12.9v1.3M1.8 8h1.3M12.9 8h1.3M3.6 3.6l.9.9M11.5 11.5l.9.9M12.4 3.6l-.9.9M4.5 11.5l-.9.9",
+    moon: "M12.8 10.6A5.3 5.3 0 0 1 5.4 3.2A5.4 5.4 0 1 0 12.8 10.6z",
+    export: "M8 10V3M5 6.5 8 3l3 3.5M3 13h10v1.5H3z",
   };
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 16 16");

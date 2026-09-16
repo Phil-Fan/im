@@ -5,7 +5,7 @@
 
 import type { Backend } from "../api";
 import * as actions from "../actions";
-import { h, replaceChildren } from "../dom";
+import { h, icon, replaceChildren, type IconName } from "../dom";
 import { PROTOCOLS } from "../presets";
 import { prettyShortcut, shortcutFromEvent } from "../shortcut";
 import { store, type State } from "../state";
@@ -13,9 +13,10 @@ import type { Appearance, Protocol, ProviderView } from "../types";
 
 export function createSettings(backend: Backend): HTMLElement {
   const providersList = h("div", { class: "groups" });
+  const providerSettings = h("div", { class: "group" });
   const general = h("div", { class: "group" });
   const data = h("div", { class: "group" });
-  const addRow = h("button", { class: "add-row", onclick: () => addDraft() }, h("span", { class: "add-plus" }, "+"), "Add Provider");
+  const addRow = h("button", { class: "add-row", type: "button", onclick: () => addDraft() }, h("span", { class: "add-plus" }, "+"), "Add Provider");
 
   const root = h(
     "div",
@@ -23,7 +24,18 @@ export function createSettings(backend: Backend): HTMLElement {
     h(
       "div",
       { class: "settings-scroll" },
-      h("div", { class: "settings-column" }, h("h1", null, "Settings"), section("Providers"), providersList, addRow, section("General"), general, section("Data"), data),
+      h(
+        "div",
+        { class: "settings-column" },
+        h("h1", null, "Settings"),
+        section("Providers", addRow),
+        providersList,
+        providerSettings,
+        section("General"),
+        general,
+        section("Data"),
+        data,
+      ),
     ),
   );
 
@@ -101,23 +113,36 @@ export function createSettings(backend: Backend): HTMLElement {
   };
   let versionEl: HTMLElement | null = null;
 
+  const renderProviderSettings = (s: State) => {
+    const prompt = h("textarea", { class: "sfield area", rows: 3, placeholder: "Copied into every new chat as its system prompt.", value: s.settings.system_prompt ?? "" }) as HTMLTextAreaElement;
+    prompt.addEventListener("change", () => void actions.saveSettings({ ...store.state.settings, system_prompt: prompt.value.trim() || undefined }));
+    replaceChildren(providerSettings, srow("System prompt", null, undefined, prompt));
+  };
+
   const renderGeneral = (s: State) => {
     const settings = s.settings;
+    const appearanceIcons: Record<Appearance, IconName> = { system: "display", light: "sun", dark: "moon" };
+    const appearanceLabels: Record<Appearance, string> = { system: "System", light: "Light", dark: "Dark" };
     const seg = h(
       "div",
       { class: "segmented", role: "radiogroup", "aria-label": "Appearance" },
       (["system", "light", "dark"] as Appearance[]).map((a) =>
         h(
           "button",
-          { class: `seg${settings.appearance === a ? " on" : ""}`, role: "radio", "aria-checked": String(settings.appearance === a), onclick: () => void actions.setAppearance(a) },
-          a[0]!.toUpperCase() + a.slice(1),
+          {
+            class: `seg icon-seg${settings.appearance === a ? " on" : ""}`,
+            role: "radio",
+            "aria-checked": String(settings.appearance === a),
+            "aria-label": appearanceLabels[a],
+            title: appearanceLabels[a],
+            onclick: () => void actions.setAppearance(a),
+          },
+          icon(appearanceIcons[a]),
         ),
       ),
     );
-    const prompt = h("textarea", { class: "sfield area", rows: 3, placeholder: "Copied into every new chat as its system prompt.", value: settings.system_prompt ?? "" }) as HTMLTextAreaElement;
-    prompt.addEventListener("change", () => void actions.saveSettings({ ...store.state.settings, system_prompt: prompt.value.trim() || undefined }));
     versionEl = versionRow();
-    replaceChildren(general, versionEl, srow("Appearance", seg), shortcutRow(), accessRow(backend), srow("System prompt", null, undefined, prompt));
+    replaceChildren(general, versionEl, srow("Appearance", seg), shortcutRow(), accessRow(backend));
   };
 
   const renderData = async () => {
@@ -139,11 +164,16 @@ export function createSettings(backend: Backend): HTMLElement {
       renderProviders(s.providers);
     }
     if (open && !wasOpen) {
+      renderProviderSettings(s);
       renderGeneral(s);
       void renderData();
     } else if (open) {
       // Appearance may have changed from the menu; keep the segmented control honest.
-      general.querySelectorAll(".seg").forEach((b, i) => b.classList.toggle("on", (["system", "light", "dark"] as Appearance[])[i] === s.settings.appearance));
+      general.querySelectorAll(".seg").forEach((b, i) => {
+        const on = (["system", "light", "dark"] as Appearance[])[i] === s.settings.appearance;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-checked", String(on));
+      });
       if (versionEl) {
         const next = versionRow();
         versionEl.replaceWith(next);
@@ -155,8 +185,8 @@ export function createSettings(backend: Backend): HTMLElement {
   return root;
 }
 
-function section(title: string): HTMLElement {
-  return h("div", { class: "section" }, h("h2", null, title));
+function section(title: string, action?: HTMLElement): HTMLElement {
+  return h("div", { class: `section${action ? " with-action" : ""}` }, h("h2", null, title), action ?? null);
 }
 
 /** One list row: label · control (right); optional note under the label and a
