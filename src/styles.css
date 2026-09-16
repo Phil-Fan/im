@@ -62,10 +62,12 @@
   box-sizing: border-box;
 }
 [hidden] {
-  display: none;
+  /* biome-ignore lint/complexity/noImportantStyles: Hidden elements must override component display rules. */
+  display: none !important;
 }
 body.no-transitions * {
-  transition: none;
+  /* biome-ignore lint/complexity/noImportantStyles: Startup must suppress all component transitions. */
+  transition: none !important;
 }
 
 html,
@@ -171,7 +173,8 @@ body.resizing {
   cursor: col-resize;
 }
 body.resizing * {
-  transition: none;
+  /* biome-ignore lint/complexity/noImportantStyles: Dragging must suppress all component transitions. */
+  transition: none !important;
   pointer-events: none;
 }
 

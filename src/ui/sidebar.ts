@@ -50,7 +50,7 @@ export function createSidebar(): HTMLElement {
     settings.classList.toggle("on", s.view === "settings");
     const u = s.update;
     // Blue dot on the settings button while an update is waiting.
-    const dot = settings.querySelector(".dot")!;
+    const dot = settings.querySelector<HTMLElement>(".dot")!;
     dot.style.display = u ? "" : "none";
     const sig = [
       s.currentId,
