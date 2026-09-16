@@ -1579,7 +1579,7 @@ body.dropping .field {
   background: transparent;
   color: var(--label);
   font-size: var(--ui);
-  text-align: right;
+  text-align: left;
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
@@ -1604,6 +1604,7 @@ body.dropping .field {
 .sfield.num {
   width: 96px;
   margin-right: -8px;
+  text-align: right;
 }
 .sfield.area {
   display: block;
@@ -1670,24 +1671,6 @@ body.dropping .field {
   color: var(--red);
 }
 .add-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  padding: 6px 10px 6px 6px;
-  border-radius: 8px;
-  font-size: var(--ui);
-  color: var(--label);
-}
-.add-row:hover {
-  background: var(--fill);
-}
-.section .add-row {
-  margin-top: 0;
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-.add-plus {
   width: 20px;
   height: 20px;
   display: inline-flex;
@@ -1696,9 +1679,18 @@ body.dropping .field {
   border-radius: 50%;
   background: var(--accent);
   color: var(--accent-text);
-  font-size: 15px;
-  line-height: 1;
-  padding-bottom: 1px;
+  flex: none;
+}
+.add-row:hover {
+  opacity: 0.88;
+}
+.add-row:active {
+  transform: scale(0.94);
+}
+.add-row svg {
+  width: 12px;
+  height: 12px;
+  display: block;
 }
 .segmented {
   display: inline-flex;
