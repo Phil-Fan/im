@@ -15,10 +15,10 @@ export function createSettings(backend: Backend): HTMLElement {
   const providersList = h("div", { class: "groups" });
   const general = h("div", { class: "group" });
   const data = h("div", { class: "group" });
-  const addRow = h(
+  const addProvider = h(
     "button",
     {
-      class: "add-row",
+      class: "icon-btn",
       type: "button",
       title: "Add Provider",
       "aria-label": "Add Provider",
@@ -37,7 +37,7 @@ export function createSettings(backend: Backend): HTMLElement {
         "div",
         { class: "settings-column" },
         h("h1", null, "Settings"),
-        section("Providers", addRow),
+        section("Providers", addProvider),
         providersList,
         section("General"),
         general,

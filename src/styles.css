@@ -1590,7 +1590,7 @@ body.dropping .field,
 
 /* Fields sit flush in their row: no chrome until you focus them. */
 .sfield {
-  width: 100%;
+  width: calc(100% + 16px);
   min-width: 0;
   padding: 3px 8px;
   margin: -3px -8px;
@@ -1599,7 +1599,7 @@ body.dropping .field,
   background: transparent;
   color: var(--label);
   font-size: var(--ui);
-  text-align: left;
+  text-align: right;
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
@@ -1618,8 +1618,6 @@ body.dropping .field,
 .sfield.name {
   text-align: left;
   font-weight: 600;
-  margin-left: -8px;
-  width: calc(100% + 16px);
 }
 .sfield.num {
   width: 96px;
@@ -1689,35 +1687,6 @@ body.dropping .field,
 }
 .tbtn.danger {
   color: var(--red);
-}
-.add-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  padding: 6px 10px 6px 6px;
-  border-radius: 8px;
-  font-size: var(--ui);
-  color: var(--label);
-}
-.section .add-row {
-  margin-top: 0;
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-.add-row:hover {
-  background: var(--fill);
-}
-.add-row svg {
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-text);
-  flex: none;
 }
 /* Selected navigation icons override the base icon colors above. */
 .nav-row.selected svg {
