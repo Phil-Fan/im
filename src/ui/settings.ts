@@ -13,10 +13,13 @@ import type { Appearance, Protocol, ProviderView } from "../types";
 
 export function createSettings(backend: Backend): HTMLElement {
   const providersList = h("div", { class: "groups" });
-  const providerSettings = h("div", { class: "group" });
   const general = h("div", { class: "group" });
   const data = h("div", { class: "group" });
-  const addRow = h("button", { class: "add-row", type: "button", onclick: () => addDraft() }, h("span", { class: "add-plus" }, "+"), "Add Provider");
+  const addRow = h(
+    "button",
+    { class: "add-row", type: "button", title: "Add Provider", "aria-label": "Add Provider", onclick: () => addDraft() },
+    icon("plus"),
+  );
 
   const root = h(
     "div",
@@ -30,7 +33,6 @@ export function createSettings(backend: Backend): HTMLElement {
         h("h1", null, "Settings"),
         section("Providers", addRow),
         providersList,
-        providerSettings,
         section("General"),
         general,
         section("Data"),
@@ -113,12 +115,6 @@ export function createSettings(backend: Backend): HTMLElement {
   };
   let versionEl: HTMLElement | null = null;
 
-  const renderProviderSettings = (s: State) => {
-    const prompt = h("textarea", { class: "sfield area", rows: 3, placeholder: "Copied into every new chat as its system prompt.", value: s.settings.system_prompt ?? "" }) as HTMLTextAreaElement;
-    prompt.addEventListener("change", () => void actions.saveSettings({ ...store.state.settings, system_prompt: prompt.value.trim() || undefined }));
-    replaceChildren(providerSettings, srow("System prompt", null, undefined, prompt));
-  };
-
   const renderGeneral = (s: State) => {
     const settings = s.settings;
     const appearanceIcons: Record<Appearance, IconName> = { system: "display", light: "sun", dark: "moon" };
@@ -141,16 +137,17 @@ export function createSettings(backend: Backend): HTMLElement {
         ),
       ),
     );
+    const prompt = h("textarea", { class: "sfield area", rows: 3, placeholder: "Copied into every new chat as its system prompt.", value: s.settings.system_prompt ?? "" }) as HTMLTextAreaElement;
+    prompt.addEventListener("change", () => void actions.saveSettings({ ...store.state.settings, system_prompt: prompt.value.trim() || undefined }));
     versionEl = versionRow();
-    replaceChildren(general, versionEl, srow("Appearance", seg), shortcutRow(), accessRow(backend));
+    replaceChildren(general, versionEl, srow("System prompt", null, undefined, prompt), srow("Appearance", seg), shortcutRow(), accessRow(backend));
   };
 
   const renderData = async () => {
-    const dir = await backend.dataDir().catch(() => "");
     replaceChildren(
       data,
-      srow("Folder", h("div", { class: "srow-inline" }, h("code", { class: "path" }, dir), tbtn("Show in Finder", () => actions.revealData()))),
-      srow("Export", tbtn("All chats as JSONL…", () => void actions.exportAll()), "One session per line; messages are replayable {role, content} pairs."),
+      srow("Folder", tbtn("Show in Finder", () => actions.revealData())),
+      srow("Export", h("div", { class: "srow-inline" }, h("button", { class: "tbtn", type: "button", title: "All chats as JSONL…", onclick: () => void actions.exportAll() }, icon("export")))),
     );
   };
 
@@ -164,7 +161,6 @@ export function createSettings(backend: Backend): HTMLElement {
       renderProviders(s.providers);
     }
     if (open && !wasOpen) {
-      renderProviderSettings(s);
       renderGeneral(s);
       void renderData();
     } else if (open) {
@@ -209,7 +205,6 @@ function tbtn(label: string, onClick: () => void, danger = false): HTMLButtonEle
  *  Esc keeps the old one. A combination the OS refuses is reported under the label. */
 function shortcutRow(): HTMLElement {
   const field = h("button", { class: "shortcut", type: "button", title: "Click, then press the new keys. Delete turns it off." }, prettyShortcut(store.state.settings.quick_shortcut)) as HTMLButtonElement;
-  const note = h("div", { class: "srow-note" }, "Summons a small input anywhere; text selected in the front app comes along as a quote.");
   let recording = false;
   const paint = () => {
     field.textContent = recording ? "Press keys…" : prettyShortcut(store.state.settings.quick_shortcut);
@@ -231,9 +226,10 @@ function shortcutRow(): HTMLElement {
     field.textContent = prettyShortcut(accel);
     void actions.setQuickShortcut(accel).then((err) => {
       paint();
-      note.textContent = err ? `Couldn't register ${prettyShortcut(accel)} — is another app using it?` : "Summons a small input anywhere; text selected in the front app comes along as a quote.";
-      note.classList.toggle("err", !!err);
-      if (err) console.warn(err);
+      if (err) {
+        field.title = `Couldn't register ${prettyShortcut(accel)} — is another app using it?`;
+        console.warn(err);
+      }
     });
   };
   field.addEventListener("click", () => {
@@ -243,7 +239,7 @@ function shortcutRow(): HTMLElement {
     window.addEventListener("keydown", onKey, true);
     field.addEventListener("blur", stop);
   });
-  return h("div", { class: "srow" }, h("div", { class: "srow-label" }, "Quick input", note), h("div", { class: "srow-control" }, field));
+  return h("div", { class: "srow" }, h("div", { class: "srow-label" }, "Quick input"), h("div", { class: "srow-control" }, field));
 }
 
 /** Reading the selection in other apps needs Accessibility access; the button asks for it. */
@@ -267,7 +263,7 @@ function accessRow(backend: Backend): HTMLElement {
     }, 1000);
   };
   void check();
-  return srow("Quote selection", control, "Reading what is selected in other apps needs Accessibility access.");
+  return srow("Quote selection", control);
 }
 
 interface ProviderCard {
